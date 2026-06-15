@@ -68,6 +68,15 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(api_router, prefix=settings.api_prefix)
+
+    @app.get("/")
+    def read_root():
+        return {
+            "status": "healthy",
+            "service": settings.app_name,
+            "message": "FormZero API is running successfully."
+        }
+
     return app
 
 
