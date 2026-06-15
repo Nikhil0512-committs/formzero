@@ -75,16 +75,21 @@ def main():
     msg.attach(MIMEText(html_body, "html"))
 
     try:
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as server:
+        if smtp_port == 465:
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30)
+        else:
+            server = smtplib.SMTP(smtp_host, smtp_port, timeout=30)
             server.ehlo()
             server.starttls()
             server.ehlo()
+
+        with server:
             server.login(smtp_user, smtp_password)
             server.sendmail(from_email, to_email, msg.as_string())
         print("OK")
         sys.exit(0)
     except Exception as exc:
-        print(f"FAIL:{exc}", file=sys.stderr)
+        print(f"FAIL: {type(exc).__name__}: {exc}", file=sys.stderr)
         sys.exit(1)
 
 
