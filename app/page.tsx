@@ -970,32 +970,10 @@ export default function Home() {
     setAuthLoading(true);
 
     try {
-      // 1. SignUp - Request OTP phase
-      if (isSignUp && !isVerifyingOtp) {
-        const response = await fetch("/api/v1/auth/request-otp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: authEmail }),
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.detail || "Failed to send verification code.");
-        }
-
-        setIsVerifyingOtp(true);
-        if (data.dev_otp) {
-          setTempDevOtp(data.dev_otp);
-        }
-        setOtpEmailSent(!!data.email_sent);
-        setAuthLoading(false);
-        return;
-      }
-
-      // 2. SignUp - Verify OTP or Login phase
-      const endpoint = (isSignUp && isVerifyingOtp) ? "/api/v1/auth/verify-otp" : "/api/v1/auth/login";
-      const requestBody = (isSignUp && isVerifyingOtp)
-        ? { email: authEmail, password: authPassword, name: authName, otp: authOtp }
+      // Direct SignUp or Login phase (OTP bypassed)
+      const endpoint = isSignUp ? "/api/v1/auth/signup" : "/api/v1/auth/login";
+      const requestBody = isSignUp
+        ? { email: authEmail, password: authPassword, name: authName }
         : { email: authEmail, password: authPassword };
 
       const response = await fetch(endpoint, {
