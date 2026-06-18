@@ -2797,11 +2797,11 @@ export default function Home() {
                   <span className="material-symbols-outlined text-primary text-2xl mb-1">school</span>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Pell Grant</p>
                 </div>
-                <div className="floating-card bottom-[20%] left-[4%] rotate-[1deg]">
+                <div className="floating-card bottom-[10%] left-[3%] rotate-[1deg]">
                   <span className="material-symbols-outlined text-primary text-2xl mb-1">medical_services</span>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Medicaid</p>
                 </div>
-                <div className="floating-card bottom-[25%] right-[6%] -rotate-[2deg]">
+                <div className="floating-card bottom-[12%] right-[4%] -rotate-[2deg]">
                   <span className="material-symbols-outlined text-primary text-2xl mb-1">thermostat</span>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">LIHEAP Bills</p>
                 </div>
@@ -2941,26 +2941,32 @@ export default function Home() {
 
               {/* Features Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl mb-20 border-t border-outline-variant/20 pt-16">
-                <div className="flex flex-col gap-3">
-                  <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+                <div className="group flex flex-col gap-4 p-6 bg-white border border-outline-variant/20 rounded-2xl shadow-sm hover:shadow-md hover:border-primary/50 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300">
+                  <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
                     <span className="material-symbols-outlined">analytics</span>
                   </div>
-                  <h3 className="font-bold text-body-lg">{activeTranslations.auditLedgerTitle}</h3>
-                  <p className="text-on-surface-variant text-xs leading-relaxed">{activeTranslations.auditLedgerDesc}</p>
+                  <div>
+                    <h3 className="font-bold text-body-lg text-primary mb-2">{activeTranslations.auditLedgerTitle}</h3>
+                    <p className="text-on-surface-variant text-xs leading-relaxed">{activeTranslations.auditLedgerDesc}</p>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-3">
-                  <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+                <div className="group flex flex-col gap-4 p-6 bg-white border border-outline-variant/20 rounded-2xl shadow-sm hover:shadow-md hover:border-primary/50 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300">
+                  <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
                     <span className="material-symbols-outlined">verified</span>
                   </div>
-                  <h3 className="font-bold text-body-lg">{activeTranslations.confidenceTitle}</h3>
-                  <p className="text-on-surface-variant text-xs leading-relaxed">{activeTranslations.confidenceDesc}</p>
+                  <div>
+                    <h3 className="font-bold text-body-lg text-primary mb-2">{activeTranslations.confidenceTitle}</h3>
+                    <p className="text-on-surface-variant text-xs leading-relaxed">{activeTranslations.confidenceDesc}</p>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-3">
-                  <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+                <div className="group flex flex-col gap-4 p-6 bg-white border border-outline-variant/20 rounded-2xl shadow-sm hover:shadow-md hover:border-primary/50 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300">
+                  <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all duration-300">
                     <span className="material-symbols-outlined">schedule</span>
                   </div>
-                  <h3 className="font-bold text-body-lg">{activeTranslations.clockTitle}</h3>
-                  <p className="text-on-surface-variant text-xs leading-relaxed">{activeTranslations.clockDesc}</p>
+                  <div>
+                    <h3 className="font-bold text-body-lg text-primary mb-2">{activeTranslations.clockTitle}</h3>
+                    <p className="text-on-surface-variant text-xs leading-relaxed">{activeTranslations.clockDesc}</p>
+                  </div>
                 </div>
               </div>
             </div>
