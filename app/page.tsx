@@ -822,6 +822,9 @@ export default function Home() {
 
         const savedView = localStorage.getItem(`claimradar_active_view_${user.email}`) as ViewState | null;
         if (savedView) setActiveView(savedView);
+        
+        const savedTab = localStorage.getItem(`claimradar_active_tab_${user.email}`) as ResultTab | null;
+        if (savedTab) setActiveTab(savedTab);
 
         const savedQuestionIdx = localStorage.getItem(`claimradar_question_index_${user.email}`);
         if (savedQuestionIdx) setCurrentQuestionIndex(parseInt(savedQuestionIdx) || 1);
@@ -905,6 +908,9 @@ export default function Home() {
         const savedView = localStorage.getItem("claimradar_active_view_guest") as ViewState | null;
         if (savedView) setActiveView(savedView);
 
+        const savedTab = localStorage.getItem("claimradar_active_tab_guest") as ResultTab | null;
+        if (savedTab) setActiveTab(savedTab);
+
         const savedQuestionIdx = localStorage.getItem("claimradar_question_index_guest");
         if (savedQuestionIdx) setCurrentQuestionIndex(parseInt(savedQuestionIdx) || 1);
 
@@ -967,6 +973,13 @@ export default function Home() {
     const key = currentUser ? `claimradar_active_view_${currentUser.email}` : "claimradar_active_view_guest";
     localStorage.setItem(key, activeView);
   }, [activeView, currentUser, isInitialLoadComplete]);
+
+  // 3b. Auto-save activeTab
+  useEffect(() => {
+    if (!isInitialLoadComplete) return;
+    const key = currentUser ? `claimradar_active_tab_${currentUser.email}` : "claimradar_active_tab_guest";
+    localStorage.setItem(key, activeTab);
+  }, [activeTab, currentUser, isInitialLoadComplete]);
 
   // 4. Auto-save currentQuestionIndex
   useEffect(() => {
@@ -1106,6 +1119,7 @@ export default function Home() {
       const guestQuestionIdx = localStorage.getItem("claimradar_question_index_guest");
       const guestRoadmapStr = localStorage.getItem("claimradar_completed_roadmap_steps_guest");
       const guestRoadmap = guestRoadmapStr ? JSON.parse(guestRoadmapStr) : {};
+      const guestActiveTab = localStorage.getItem("claimradar_active_tab_guest") as ResultTab | null;
 
       let finalFacts = data.profile_facts || {};
       let finalChat = data.chat_messages || [];
@@ -1136,6 +1150,9 @@ export default function Home() {
       let finalQuestionIdx = guestQuestionIdx || "1";
       localStorage.setItem(`claimradar_question_index_${data.user.email}`, finalQuestionIdx);
 
+      let finalTab = guestActiveTab || "matched";
+      localStorage.setItem(`claimradar_active_tab_${data.user.email}`, finalTab);
+
       if (Object.keys(finalRoadmap).length > 0) {
         localStorage.setItem(`claimradar_completed_roadmap_steps_${data.user.email}`, JSON.stringify(finalRoadmap));
       }
@@ -1146,6 +1163,7 @@ export default function Home() {
       localStorage.removeItem("claimradar_active_view_guest");
       localStorage.removeItem("claimradar_question_index_guest");
       localStorage.removeItem("claimradar_completed_roadmap_steps_guest");
+      localStorage.removeItem("claimradar_active_tab_guest");
 
       // 2. Batch React state updates synchronously
       setCurrentUser(userSession);
@@ -1154,6 +1172,7 @@ export default function Home() {
       setActiveView(finalView);
       setCurrentQuestionIndex(parseInt(finalQuestionIdx) || 1);
       setCompletedRoadmapSteps(finalRoadmap);
+      setActiveTab(finalTab);
 
       // 3. Unconditionally calculate/reset eligibility results
       if (Object.keys(finalFacts).length > 0) {
@@ -1251,6 +1270,7 @@ export default function Home() {
       localStorage.removeItem(`claimradar_active_view_${currentUser.email}`);
       localStorage.removeItem(`claimradar_question_index_${currentUser.email}`);
       localStorage.removeItem(`claimradar_completed_roadmap_steps_${currentUser.email}`);
+      localStorage.removeItem(`claimradar_active_tab_${currentUser.email}`);
     }
     setCurrentUser(null);
     localStorage.removeItem("claimradar_user");
@@ -1277,6 +1297,7 @@ export default function Home() {
       localStorage.removeItem(`claimradar_active_view_${currentUser.email}`);
       localStorage.removeItem(`claimradar_question_index_${currentUser.email}`);
       localStorage.removeItem(`claimradar_completed_roadmap_steps_${currentUser.email}`);
+      localStorage.removeItem(`claimradar_active_tab_${currentUser.email}`);
       localStorage.removeItem("claimradar_user");
       setCurrentUser(null);
       setShowDeleteAccountModal(false);
@@ -2706,6 +2727,7 @@ export default function Home() {
     setClockData(null);
     setCurrentQuestionIndex(1);
     setCompletedRoadmapSteps({});
+    setActiveTab("matched");
 
     if (currentUser && sync) {
       localStorage.removeItem(`claimradar_chat_${currentUser.email}`);
@@ -2713,6 +2735,7 @@ export default function Home() {
       localStorage.removeItem(`claimradar_active_view_${currentUser.email}`);
       localStorage.removeItem(`claimradar_question_index_${currentUser.email}`);
       localStorage.removeItem(`claimradar_completed_roadmap_steps_${currentUser.email}`);
+      localStorage.removeItem(`claimradar_active_tab_${currentUser.email}`);
       
       fetch("/api/v1/auth/save-profile", {
         method: "POST",
@@ -2729,6 +2752,7 @@ export default function Home() {
       localStorage.removeItem("claimradar_active_view_guest");
       localStorage.removeItem("claimradar_question_index_guest");
       localStorage.removeItem("claimradar_completed_roadmap_steps_guest");
+      localStorage.removeItem("claimradar_active_tab_guest");
     }
   }
 
