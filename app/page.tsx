@@ -4488,7 +4488,19 @@ export default function Home() {
 
             {/* TAB 3: DOCUMENT CHECKLIST */}
             {activeTab === "documents" && (() => {
-              // Dynamically calculate document preparedness
+              // Collect documents that are already completed from roadmap
+              const completedDocs = new Set<string>();
+              eligibilityResults.forEach((b) => {
+                if (completedRoadmapSteps[b.program_name]) {
+                  const checklist = getDocumentChecklist(b.program_name);
+                  if (checklist) {
+                    checklist.documents.forEach((doc) => {
+                      completedDocs.add(doc.name);
+                    });
+                  }
+                }
+              });
+
               let totalDocs = 0;
               let likelyHaveDocs = 0;
               let needToGatherDocs = 0;
@@ -4504,7 +4516,7 @@ export default function Home() {
                     if (!seenDocs.has(doc.name)) {
                       seenDocs.add(doc.name);
                       totalDocs++;
-                      if (doc.status === "likely_have") {
+                      if (completedDocs.has(doc.name) || doc.status === "likely_have") {
                         likelyHaveDocs++;
                       } else if (doc.status === "need_to_gather") {
                         needToGatherDocs++;
@@ -4651,6 +4663,7 @@ export default function Home() {
                       const checklist = getDocumentChecklist(b.program_name);
                       if (!checklist) return null;
                       const isOpen = expandedDocumentChecklist === b.program_id;
+                      const isProgramCompleted = completedRoadmapSteps[b.program_name] === true;
 
                       return (
                         <details
@@ -4676,66 +4689,101 @@ export default function Home() {
                                 </p>
                               </div>
                             </div>
-                            <span className="material-symbols-outlined transition-transform group-open:rotate-180 text-xl font-bold">
-                              expand_more
-                            </span>
+                            <div className="flex items-center gap-3">
+                              {b.eligible && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCompletedRoadmapSteps(prev => ({
+                                      ...prev,
+                                      [b.program_name]: !prev[b.program_name]
+                                    }));
+                                  }}
+                                  className={`px-3 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-wider duration-200 cursor-pointer flex items-center gap-1 ${
+                                    isProgramCompleted
+                                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                      : "bg-surface-container-highest text-on-surface-variant hover:bg-primary/10 hover:text-primary"
+                                  }`}
+                                >
+                                  <span className="material-symbols-outlined text-xs">check_circle</span>
+                                  <span>
+                                    {isProgramCompleted
+                                      ? (lang === "es" ? "Completado" : "Completed")
+                                      : (lang === "es" ? "Marcar Hecho" : "Mark Done")}
+                                  </span>
+                                </button>
+                              )}
+                              <span className="material-symbols-outlined transition-transform group-open:rotate-180 text-xl font-bold">
+                                expand_more
+                              </span>
+                            </div>
                           </summary>
                           <div className="p-6 pt-0 border-t border-outline-variant/10">
                             <ul className="space-y-4 pt-6">
-                              {checklist.documents.map((doc, dIdx) => (
-                                <li
-                                  key={dIdx}
-                                  className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10 shadow-sm gap-4 border-l-4 ${doc.status === "likely_have" ? "border-l-emerald-600" : doc.status === "need_to_gather" ? "border-l-amber-600" : "border-l-error"}`}
-                                >
-                                  <div className="flex items-start gap-4">
-                                    <div
-                                      className={`p-2 rounded-full shrink-0 ${doc.status === "likely_have" ? "text-emerald-600 bg-emerald-50" : doc.status === "need_to_gather" ? "text-amber-600 bg-amber-50" : "text-error bg-error-container"}`}
-                                    >
-                                      <span className="material-symbols-outlined text-sm font-bold">
-                                        {doc.status === "likely_have" ? "check_circle" : doc.status === "need_to_gather" ? "hourglass_empty" : "close"}
-                                      </span>
+                              {checklist.documents.map((doc, dIdx) => {
+                                const isDocCompleted = completedDocs.has(doc.name) || isProgramCompleted;
+                                return (
+                                  <li
+                                    key={dIdx}
+                                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10 shadow-sm gap-4 border-l-4 ${isDocCompleted || doc.status === "likely_have" ? "border-l-emerald-600" : doc.status === "need_to_gather" ? "border-l-amber-600" : "border-l-error"}`}
+                                  >
+                                    <div className="flex items-start gap-4">
+                                      <div
+                                        className={`p-2 rounded-full shrink-0 ${isDocCompleted || doc.status === "likely_have" ? "text-emerald-600 bg-emerald-50" : doc.status === "need_to_gather" ? "text-amber-600 bg-amber-50" : "text-error bg-error-container"}`}
+                                      >
+                                        <span className="material-symbols-outlined text-sm font-bold">
+                                          {isDocCompleted || doc.status === "likely_have" ? "check_circle" : doc.status === "need_to_gather" ? "hourglass_empty" : "close"}
+                                        </span>
+                                      </div>
+                                      <div>
+                                        <h4 className="font-bold text-sm text-primary">
+                                          {lang === "es" ? doc.name_es : doc.name}
+                                        </h4>
+                                        <p className="text-xs text-on-surface-variant leading-relaxed">
+                                          {lang === "es" ? doc.description_es : doc.description}
+                                        </p>
+                                        <span className="text-[10px] font-semibold text-on-surface-variant/70 uppercase tracking-wide block mt-1">
+                                          {isDocCompleted
+                                            ? (lang === "es" ? "Completado" : "Completed")
+                                            : doc.status === "likely_have"
+                                            ? activeTranslations.likelyHave
+                                            : doc.status === "need_to_gather"
+                                            ? activeTranslations.needToGather
+                                            : activeTranslations.mayNotHave}{" "}
+                                          • {lang === "es" ? doc.time_estimate_es : doc.time_estimate}
+                                        </span>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <h4 className="font-bold text-sm text-primary">
-                                        {lang === "es" ? doc.name_es : doc.name}
-                                      </h4>
-                                      <p className="text-xs text-on-surface-variant leading-relaxed">
-                                        {lang === "es" ? doc.description_es : doc.description}
-                                      </p>
-                                      <span className="text-[10px] font-semibold text-on-surface-variant/70 uppercase tracking-wide block mt-1">
-                                        {doc.status === "likely_have"
-                                          ? activeTranslations.likelyHave
-                                          : doc.status === "need_to_gather"
-                                          ? activeTranslations.needToGather
-                                          : activeTranslations.mayNotHave}{" "}
-                                        • {lang === "es" ? doc.time_estimate_es : doc.time_estimate}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div className="shrink-0 flex items-center justify-end">
-                                    {doc.status === "likely_have" ? (
-                                      <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full uppercase tracking-wider">
-                                        {activeTranslations.likelyHave}
-                                      </span>
-                                    ) : (
-                                      doc.obtain_url ? (
-                                        <a
-                                          href={doc.obtain_url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-primary font-bold text-xs hover:underline cursor-pointer"
-                                        >
-                                          {activeTranslations.obtain}
-                                        </a>
+                                    <div className="shrink-0 flex items-center justify-end">
+                                      {isDocCompleted ? (
+                                        <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full uppercase tracking-wider">
+                                          {lang === "es" ? "✓ Completado" : "✓ Completed"}
+                                        </span>
+                                      ) : doc.status === "likely_have" ? (
+                                        <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full uppercase tracking-wider">
+                                          {activeTranslations.likelyHave}
+                                        </span>
                                       ) : (
-                                        <button className="text-primary font-bold text-xs hover:underline cursor-pointer">
-                                          {activeTranslations.obtain}
-                                        </button>
-                                      )
-                                    )}
-                                  </div>
-                                </li>
-                              ))}
+                                        doc.obtain_url ? (
+                                          <a
+                                            href={doc.obtain_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-primary font-bold text-xs hover:underline cursor-pointer"
+                                          >
+                                            {activeTranslations.obtain}
+                                          </a>
+                                        ) : (
+                                          <button className="text-primary font-bold text-xs hover:underline cursor-pointer">
+                                            {activeTranslations.obtain}
+                                          </button>
+                                        )
+                                      )}
+                                    </div>
+                                  </li>
+                                );
+                              })}
                             </ul>
                           </div>
                         </details>
