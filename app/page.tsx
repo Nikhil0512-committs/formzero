@@ -4491,17 +4491,25 @@ export default function Home() {
               // Dynamically calculate document preparedness
               let totalDocs = 0;
               let likelyHaveDocs = 0;
+              let needToGatherDocs = 0;
+              let mayNotHaveDocs = 0;
+              let uncondensedCount = 0;
               const seenDocs = new Set<string>();
 
               eligibilityResults.forEach((b) => {
                 const checklist = getDocumentChecklist(b.program_name);
                 if (checklist) {
+                  uncondensedCount += checklist.documents.length;
                   checklist.documents.forEach((doc) => {
                     if (!seenDocs.has(doc.name)) {
                       seenDocs.add(doc.name);
                       totalDocs++;
                       if (doc.status === "likely_have") {
                         likelyHaveDocs++;
+                      } else if (doc.status === "need_to_gather") {
+                        needToGatherDocs++;
+                      } else {
+                        mayNotHaveDocs++;
                       }
                     }
                   });
@@ -4509,42 +4517,118 @@ export default function Home() {
               });
 
               const preparednessPercentage = totalDocs > 0 ? Math.round((likelyHaveDocs / totalDocs) * 100) : 0;
+              const duplicateSavings = uncondensedCount - totalDocs;
 
               return (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
                   {/* Left Side: Summary Panel */}
                   <div className="lg:col-span-4 lg:sticky lg:top-32 w-full">
                     <div className="glass-card p-8 rounded-xl border border-outline-variant/30 space-y-6">
-                      <h3 className="font-headline-md text-2xl font-bold text-primary">
-                        {lang === "es" ? "Análisis de Resumen" : "Summary Analysis"}
-                      </h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between font-semibold text-xs text-on-surface-variant">
-                          <span>{lang === "es" ? "Probablemente Disponible" : "Likely Available"}</span>
-                          <span className="text-primary font-bold">{preparednessPercentage}%</span>
-                        </div>
-                        <div className="w-full bg-surface-container h-2 rounded-full overflow-hidden">
-                          <div className="bg-primary h-full transition-all duration-500" style={{ width: `${preparednessPercentage}%` }}></div>
-                        </div>
-                        <p className="text-xs text-on-surface-variant leading-relaxed">
-                          {lang === "es"
-                            ? `Según los programas para los que califica, es probable que ya tenga el ${preparednessPercentage}% de los documentos requeridos. Los programas estatales suelen compartir los mismos requisitos.`
-                            : `Based on the programs you qualify for, you likely already have ${preparednessPercentage}% of the required documents. State programs often share the same requirements.`}
+                      <div className="space-y-1">
+                        <h3 className="font-headline-md text-2xl font-bold text-primary leading-tight">
+                          {lang === "es" ? "Análisis de Resumen" : "Summary Analysis"}
+                        </h3>
+                        <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">
+                          {lang === "es" ? "Evaluación de Preparación" : "Preparation Audit"}
                         </p>
-                        <div className="pt-6 border-t border-outline-variant/20 space-y-4">
-                          <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
-                              <span className="material-symbols-outlined text-sm font-bold">shield_lock</span>
+                      </div>
+
+                      {/* Document Status Breakdown List */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between font-bold text-xs text-on-surface">
+                          <span>{lang === "es" ? "Listo para Enviar" : "Ready to Submit"}</span>
+                          <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">
+                            {likelyHaveDocs} {lang === "es" ? "docs" : "docs"} ({preparednessPercentage}%)
+                          </span>
+                        </div>
+
+                        {/* Segmented Progress Bar */}
+                        <div className="w-full bg-surface-container h-3 rounded-full overflow-hidden flex">
+                          <div className="bg-emerald-500 h-full transition-all duration-500" style={{ width: `${totalDocs > 0 ? (likelyHaveDocs / totalDocs) * 100 : 0}%` }}></div>
+                          <div className="bg-amber-500 h-full transition-all duration-500" style={{ width: `${totalDocs > 0 ? (needToGatherDocs / totalDocs) * 100 : 0}%` }}></div>
+                          <div className="bg-error h-full transition-all duration-500" style={{ width: `${totalDocs > 0 ? (mayNotHaveDocs / totalDocs) * 100 : 0}%` }}></div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 text-[10px] text-on-surface-variant font-semibold pt-1">
+                          <div className="flex items-center gap-1.5 justify-center py-1 bg-emerald-50/50 border border-emerald-100 rounded">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <span>{likelyHaveDocs} {lang === "es" ? "Listo" : "Ready"}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 justify-center py-1 bg-amber-50/50 border border-amber-100 rounded">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            <span>{needToGatherDocs} {lang === "es" ? "Falta" : "Gather"}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 justify-center py-1 bg-red-50/50 border border-red-100 rounded">
+                            <span className="w-1.5 h-1.5 rounded-full bg-error"></span>
+                            <span>{mayNotHaveDocs} {lang === "es" ? "Falta" : "Action"}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Smart Deduplication Alert Card */}
+                      {duplicateSavings > 0 && (
+                        <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary text-base font-bold">join_inner</span>
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-wide">
+                              {lang === "es" ? "Deduplicación Inteligente" : "Smart Deduplication"}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                            {lang === "es" ? (
+                              <>
+                                FormZero comparó sus <strong>{eligibilityResults.filter(r => r.eligible).length} programas elegibles</strong> y combinó requisitos idénticos. ¡Ahorró <strong>{duplicateSavings} documentos duplicados</strong>! Solo necesita reunir {totalDocs} archivos únicos.
+                              </>
+                            ) : (
+                              <>
+                                FormZero cross-referenced your <strong>{eligibilityResults.filter(r => r.eligible).length} matched programs</strong> and merged identical requirements. You saved <strong>{duplicateSavings} duplicate documents</strong>! You only need to collect {totalDocs} unique files.
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Audit Progress Steps */}
+                      <div className="pt-4 border-t border-outline-variant/20 space-y-3">
+                        <div className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">
+                          {lang === "es" ? "Etapas de Verificación" : "Verification Stages"}
+                        </div>
+                        <ul className="space-y-2.5">
+                          <li className="flex items-center gap-2.5 text-xs font-medium text-on-surface-variant">
+                            <span className="material-symbols-outlined text-emerald-600 text-sm font-bold">check_circle</span>
+                            <span>{lang === "es" ? "Datos de perfil verificados" : "Profile matching complete"}</span>
+                          </li>
+                          <li className="flex items-center gap-2.5 text-xs font-medium text-on-surface-variant">
+                            <span className="material-symbols-outlined text-emerald-600 text-sm font-bold">check_circle</span>
+                            <span>{lang === "es" ? "Límites federales auditados" : "Federal threshold audit complete"}</span>
+                          </li>
+                          <li className="flex items-center gap-2.5 text-xs font-medium text-on-surface-variant">
+                            <span className={`material-symbols-outlined text-sm font-bold ${preparednessPercentage === 100 ? "text-emerald-600" : "text-amber-500 animate-pulse"}`}>
+                              {preparednessPercentage === 100 ? "check_circle" : "pending"}
+                            </span>
+                            <span>
+                              {lang === "es" 
+                                ? `${likelyHaveDocs} de ${totalDocs} documentos listos` 
+                                : `${likelyHaveDocs} of ${totalDocs} documents ready`}
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
+
+                      {/* Privacy & Local Processing Box */}
+                      <div className="pt-4 border-t border-outline-variant/20">
+                        <div className="bg-surface-container-low border border-outline-variant/15 rounded-xl p-4 flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
+                            <span className="material-symbols-outlined text-sm font-bold">shield_lock</span>
+                          </div>
+                          <div>
+                            <div className="text-[10px] font-bold text-primary uppercase tracking-wide">
+                              {lang === "es" ? "Privacidad Primero" : "Privacy First"}
                             </div>
-                            <div>
-                              <div className="text-[10px] font-bold text-primary uppercase tracking-wide">
-                                {lang === "es" ? "Privacidad Primero" : "Privacy First"}
-                              </div>
-                              <div className="text-[10px] text-on-surface-variant/80 leading-normal mt-1">
-                                {lang === "es"
-                                  ? "Nunca almacenamos sus documentos ni datos personales en nuestros servidores. Todo se procesa localmente en su dispositivo."
-                                  : "We never store your documents or personal data on our servers. Everything is processed locally on your device."}
-                              </div>
+                            <div className="text-[10px] text-on-surface-variant/80 leading-normal mt-1">
+                              {lang === "es"
+                                ? "Nunca almacenamos sus documentos ni datos personales en nuestros servidores. Todo se procesa localmente en su dispositivo."
+                                : "We never store your documents or personal data on our servers. Everything is processed locally on your device."}
                             </div>
                           </div>
                         </div>
