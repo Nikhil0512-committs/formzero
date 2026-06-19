@@ -3226,7 +3226,7 @@ export default function Home() {
                 </header>
 
                 {/* Interactive Path Tabs */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mt-8">
                   {/* Tab 1: Confusing Forms */}
                   <button
                     onClick={() => setActiveComparisonTab("forms")}
@@ -3264,19 +3264,6 @@ export default function Home() {
                   >
                     <span className="material-symbols-outlined text-[24px]">check_circle</span>
                     <span className="font-bold text-xs sm:text-sm">{lang === "es" ? "IA inteligente FormZero" : "FormZero Smart AI"}</span>
-                  </button>
-
-                  {/* Tab 4: Caseworker Backing */}
-                  <button
-                    onClick={() => setActiveComparisonTab("caseworker")}
-                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
-                      activeComparisonTab === "caseworker"
-                        ? "bg-blue-500/10 border-blue-500 text-blue-600 shadow-md scale-[1.02]"
-                        : "bg-white border-outline-variant/30 text-on-surface-variant hover:border-blue-500/30"
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[24px]">support_agent</span>
-                    <span className="font-bold text-xs sm:text-sm">{lang === "es" ? "Control de Asistente" : "Caseworker Check"}</span>
                   </button>
                 </div>
 
@@ -3382,39 +3369,6 @@ export default function Home() {
                         </ul>
                       </div>
                     )}
-
-                    {activeComparisonTab === "caseworker" && (
-                      <div className="space-y-4 animate-fade-in">
-                        <h3 className="text-xl font-bold text-blue-600 flex items-center gap-2">
-                          <span className="material-symbols-outlined">support_agent</span>
-                          {lang === "es" ? "Verificación de Asistente Social" : "Caseworker Verification"}
-                        </h3>
-                        <p className="text-sm text-on-surface-variant leading-relaxed">
-                          {lang === "es"
-                            ? "Si su caso es complejo o requiere ayuda adicional, lo conectamos con grupos locales de asistencia legal real que verifican su perfil y ayudan a enviar los formularios de forma gratuita."
-                            : "If your case is complex or requires extra help, we connect you to real local legal aid groups who verify your profile and help submit the forms for free."}
-                        </p>
-                        <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-2">
-                          <div className="bg-blue-500/5 p-2 sm:p-3 rounded-xl border border-blue-500/10 text-center">
-                            <div className="text-[8px] sm:text-[10px] text-blue-600 uppercase font-bold tracking-wider">{lang === "es" ? "Costo" : "Cost"}</div>
-                            <div className="font-bold text-xs sm:text-base text-blue-600">{lang === "es" ? "Gratis" : "Free"}</div>
-                          </div>
-                          <div className="bg-blue-500/5 p-2 sm:p-3 rounded-xl border border-blue-500/10 text-center">
-                            <div className="text-[8px] sm:text-[10px] text-blue-600 uppercase font-bold tracking-wider">{lang === "es" ? "Tiempo" : "Time"}</div>
-                            <div className="font-bold text-xs sm:text-base text-primary">{lang === "es" ? "1-2 Días" : "1-2 Days"}</div>
-                          </div>
-                          <div className="bg-blue-500/5 p-2 sm:p-3 rounded-xl border border-blue-500/10 text-center">
-                            <div className="text-[8px] sm:text-[10px] text-blue-600 uppercase font-bold tracking-wider">{lang === "es" ? "Riesgo" : "Chance of Error"}</div>
-                            <div className="font-bold text-xs sm:text-base text-emerald-600">{lang === "es" ? "Ninguno" : "None"}</div>
-                          </div>
-                        </div>
-                        <ul className="space-y-2.5 text-xs text-on-surface-variant list-disc pl-4 pt-2">
-                          <li>{lang === "es" ? "Expertos humanos reales verifican sus reclamaciones." : "Real human experts double-check your claims."}</li>
-                          <li>{lang === "es" ? "Le conecta con organizaciones de ayuda legal gratuitas cercanas." : "Matches you with free legal aid organizations nearby."}</li>
-                          <li>{lang === "es" ? "Guía paso a paso para firmar y enviar." : "Step-by-step guidance on signing and submitting."}</li>
-                        </ul>
-                      </div>
-                    )}
                   </div>
 
                   {/* Right Side: Interactive Layout Mockups */}
@@ -3501,29 +3455,6 @@ export default function Home() {
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Visual mockup for Caseworker Verification */}
-                    {activeComparisonTab === "caseworker" && (
-                      <div className="w-full space-y-3 animate-fade-in">
-                        <div className="text-[10px] font-mono text-blue-600 bg-blue-500/5 border border-blue-500/10 px-2.5 py-1 rounded-md uppercase font-bold tracking-widest text-center w-max mx-auto">
-                          {lang === "es" ? "Revisión Humana" : "Human Review"}
-                        </div>
-                        <div className="bg-white p-4 rounded-xl border border-outline-variant/30 shadow-sm flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 font-bold text-sm">
-                            JD
-                          </div>
-                          <div className="space-y-0.5">
-                            <div className="text-[10px] font-bold text-primary">{lang === "es" ? "Socio de Ayuda Legal" : "Legal Aid Partner"}</div>
-                            <p className="text-[9px] text-on-surface-variant italic leading-snug">
-                              {lang === "es" ? "\"¡Hola! Revisé su solicitud de Georgia, todo está correcto. ¡Vamos a enviarla!\"" : "\"Hi! I reviewed your Georgia application, everything is correct. Let's submit it!\""}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-[9px] text-center text-blue-600 font-semibold bg-blue-500/5 py-1 rounded-lg border border-blue-500/10 font-bold">
-                          {lang === "es" ? "Estado: Verificado y Listo" : "Status: Verified & Ready"}
                         </div>
                       </div>
                     )}
