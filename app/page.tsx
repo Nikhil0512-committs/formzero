@@ -4583,239 +4583,301 @@ export default function Home() {
             })()}
 
             {/* TAB 4: DEPENDENCY ROADMAP */}
-            {activeTab === "roadmap" && (
-              <div className="max-w-2xl mx-auto w-full space-y-12">
-                {/* Header */}
-                <header className="text-center max-w-xl mx-auto mb-16">
-                  <h1 className="font-display-lg text-display-lg-mobile md:text-5xl text-primary mb-4 leading-tight">
-                    {activeTranslations.roadmapTitle}
-                  </h1>
-                  <p className="font-body-lg text-body-md text-on-surface-variant leading-relaxed">
-                    {activeTranslations.roadmapDesc}
-                  </p>
-                </header>
+            {activeTab === "roadmap" && (() => {
+              const totalSteps = orderedRoadmap.length;
+              const completedSteps = orderedRoadmap.filter(item => completedRoadmapSteps[item.name] === true).length;
+              const roadmapProgressPercentage = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
-                {/* Multi-Hop Visualizer */}
-                <div className="glass-card p-6 rounded-2xl space-y-6 shadow-sm border-primary/5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                      <span className="material-symbols-outlined text-[18px]">account_tree</span>
-                    </span>
-                    <div>
-                      <h3 className="font-bold text-sm text-primary uppercase tracking-wider">
-                        {lang === "es" ? "Visualizador de Desbloqueo Multi-Salto (IA)" : "AI Multi-Hop Unlock Chain Visualizer"}
-                      </h3>
-                      <p className="text-[10px] text-on-surface-variant">
-                        {lang === "es" ? "Cómo los programas aprobados eliminan barreras para aprobaciones subsiguientes." : "How sequential approvals categorically bypass subsequent verification backlogs."}
-                      </p>
-                    </div>
-                  </div>
+              const completedValue = orderedRoadmap.reduce((sum, item) => {
+                if (completedRoadmapSteps[item.name] === true) {
+                  const matchedResult = eligibilityResults.find(r => r.program_name === item.name);
+                  if (matchedResult) {
+                    return sum + (matchedResult.monthly_value_usd * 12);
+                  }
+                }
+                return sum;
+              }, 0);
 
-                  <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-2">
-                    <div className="flex-1 bg-white p-4 rounded-xl border border-outline-variant/35 shadow-sm text-center w-full relative group hover:border-primary/50 transition-colors">
-                      <span className="bg-primary/5 text-primary text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-widest block w-max mx-auto mb-2">Stage 1</span>
-                      <h4 className="font-bold text-xs text-primary mb-1">SNAP / Medicaid</h4>
-                      <p className="text-[10px] text-on-surface-variant leading-relaxed">
-                        {lang === "es" ? "Aprobación de Ingresos Básicos" : "Base Gross Income Audit Approved"}
-                      </p>
-                    </div>
+              return (
+                <div className="max-w-2xl mx-auto w-full space-y-12">
+                  {/* Header */}
+                  <header className="text-center max-w-xl mx-auto mb-16">
+                    <h1 className="font-display-lg text-display-lg-mobile md:text-5xl text-primary mb-4 leading-tight">
+                      {activeTranslations.roadmapTitle}
+                    </h1>
+                    <p className="font-body-lg text-body-md text-on-surface-variant leading-relaxed">
+                      {activeTranslations.roadmapDesc}
+                    </p>
+                  </header>
 
-                    <div className="flex items-center justify-center shrink-0 w-8 md:w-12 h-8 md:h-auto select-none pointer-events-none">
-                      <svg className="w-6 h-6 text-primary animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" className="hidden md:block" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" className="block md:hidden" />
-                      </svg>
-                    </div>
-
-                    <div className="flex-1 bg-white p-4 rounded-xl border border-outline-variant/35 shadow-sm text-center w-full relative group hover:border-primary/50 transition-colors">
-                      <span className="bg-emerald-500/10 text-emerald-700 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-widest block w-max mx-auto mb-2">Unlocked Stage 2</span>
-                      <h4 className="font-bold text-xs text-emerald-950 mb-1">Lifeline Broadband</h4>
-                      <p className="text-[10px] text-emerald-900 leading-relaxed font-medium">
-                        {lang === "es" ? "Calificación Categórica Directa" : "Direct Categorical Qualification"}
-                      </p>
-                      <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-                        {lang === "es" ? "Aprobación Instantánea" : "Instant Approval"}
+                  {/* Roadmap Progress Panel */}
+                  <div className="glass-card p-6 rounded-2xl border border-outline-variant/35 shadow-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <h3 className="font-bold text-sm text-primary uppercase tracking-wider">
+                          {lang === "es" ? "Progreso de la Ruta de Aplicación" : "Application Roadmap Progress"}
+                        </h3>
+                        <p className="text-xs text-on-surface-variant mt-1">
+                          {lang === "es"
+                            ? `${completedSteps} de ${totalSteps} programas completados (${roadmapProgressPercentage}%)`
+                            : `${completedSteps} of ${totalSteps} programs completed (${roadmapProgressPercentage}%)`}
+                        </p>
                       </div>
-                    </div>
-
-                    <div className="flex items-center justify-center shrink-0 w-8 md:w-12 h-8 md:h-auto select-none pointer-events-none">
-                      <svg className="w-6 h-6 text-primary animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" className="hidden md:block" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" className="block md:hidden" />
-                      </svg>
-                    </div>
-
-                    <div className="flex-grow flex-1 bg-white p-4 rounded-xl border border-outline-variant/35 shadow-sm text-center w-full relative group hover:border-primary/50 transition-colors animate-in zoom-in-95 duration-500">
-                      <span className="bg-emerald-500/10 text-emerald-700 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-widest block w-max mx-auto mb-2">Unlocked Stage 3</span>
-                      <h4 className="font-bold text-xs text-emerald-950 mb-1">WIC Support</h4>
-                      <p className="text-[10px] text-emerald-900 leading-relaxed font-medium">
-                        {lang === "es" ? "Revisión Urgente sin Carga" : "Expedited Backlog Bypass"}
-                      </p>
-                      <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm animate-bounce">
-                        {lang === "es" ? "Ahorra 3 Semanas" : "Saves 3 Weeks"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Optimal Application Order Engine */}
-                <div className="glass-card p-6 rounded-2xl border border-outline-variant/35 shadow-sm space-y-6">
-                  <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                      <span className="material-symbols-outlined text-[18px]">route</span>
-                    </span>
-                    <div>
-                      <h3 className="font-bold text-sm text-primary uppercase tracking-wider">
-                        {lang === "es" ? "Secuenciación Óptima de Aplicaciones (IA)" : "AI Optimal Application Sequence"}
-                      </h3>
-                      <p className="text-[10px] text-on-surface-variant">
-                        {lang === "es" ? "Secuencia óptima calculada en base a tiempos de espera, plazos y desbloqueos mutuos." : "Chronological sequence calculated to maximize speed and automatic categorical overrides."}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
-                    <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 space-y-2 relative">
-                      <div className="flex justify-between items-center">
-                        <span className="bg-primary text-on-primary text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Priority 1</span>
-                        <span className="text-[10px] text-error font-bold">45d Wait</span>
-                      </div>
-                      <h4 className="font-bold text-xs text-primary">Medicaid</h4>
-                      <p className="text-[10px] text-on-surface-variant leading-relaxed">
-                        {lang === "es" ? "Aplique primero. Tarda 45 días pero desbloquea Lifeline y WIC." : "Apply first. Longest backlog (45 days) but unlocks Lifeline and WIC verification exemptions."}
-                      </p>
-                    </div>
-
-                    <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="bg-primary text-on-primary text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Priority 2</span>
-                        <span className="text-[10px] text-on-surface-variant font-bold font-semibold">30d Wait</span>
-                      </div>
-                      <h4 className="font-bold text-xs text-primary">SNAP</h4>
-                      <p className="text-[10px] text-on-surface-variant leading-relaxed">
-                        {lang === "es" ? "Aplique segundo. Tarda 30 días. Su aprobación califica para Lifeline." : "Apply second. Standard backlog (30 days). SNAP approval establishes instant Lifeline eligibility."}
-                      </p>
-                    </div>
-
-                    <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="bg-primary text-on-primary text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Priority 3</span>
-                        <span className="text-[10px] text-on-surface-variant font-bold font-semibold">7d Wait</span>
-                      </div>
-                      <h4 className="font-bold text-xs text-primary">Pell Grant</h4>
-                      <p className="text-[10px] text-on-surface-variant leading-relaxed">
-                        {lang === "es" ? "Aplique tercero. Tarda 7 días. Su estado de beca califica para SNAP de estudiante." : "Apply third. Short backlog (7 days). Grant approval qualifies college student exception rules for SNAP."}
-                      </p>
-                    </div>
-
-                    <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="bg-emerald-500 text-white text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Priority 4</span>
-                        <span className="text-[10px] text-emerald-600 font-bold font-semibold">Instant</span>
-                      </div>
-                      <h4 className="font-bold text-xs text-emerald-950 font-bold">Lifeline</h4>
-                      <p className="text-[10px] text-on-surface-variant leading-relaxed">
-                        {lang === "es" ? "Aplique al final. Aprobación instantánea usando SNAP o Medicaid." : "Apply last. Instant activation using verification hash from SNAP or Medicaid approval."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Steps timeline */}
-                <div className="relative flex flex-col items-center gap-0">
-                  {orderedRoadmap.map((item, idx) => {
-                    const matchedResult = eligibilityResults.find(r => r.program_name === item.name);
-                    const eligible = matchedResult ? matchedResult.eligible : false;
-                    const isCompleted = completedRoadmapSteps[item.name] === true;
-                    // A step is unlocked if it's the first step OR the previous step is completed (marked as done)
-                    const isUnlocked = idx === 0 || completedRoadmapSteps[orderedRoadmap[idx - 1].name] === true;
-
-                    return (
-                      <React.Fragment key={idx}>
-                        <div className="w-full relative z-10">
-                          <div
-                            className={`rounded-xl p-8 border border-outline-variant/35 shadow-sm transition-all duration-300 hover:translate-y-[-2px] border-l-4 ${isCompleted ? "bg-emerald-50/20 border-emerald-500/35 border-l-emerald-500" : isUnlocked ? "bg-white border-l-primary" : "bg-surface-container-low border-l-outline-variant opacity-85"}`}
-                          >
-                            <div className="flex flex-col md:flex-row gap-6">
-                              <div
-                                className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 ${isCompleted ? "bg-emerald-500 text-white animate-in zoom-in-50 duration-200" : isUnlocked ? "bg-primary text-on-primary" : "bg-surface-container-highest text-on-surface-variant/40"}`}
-                              >
-                                <span className="material-symbols-outlined text-xl font-bold">
-                                  {isCompleted ? "check_circle" : isUnlocked ? "check_circle" : "lock"}
-                                </span>
-                              </div>
-                              <div className="flex-grow">
-                                <div className="flex justify-between items-start mb-2">
-                                  <span className="bg-surface-container-highest px-3 py-1 rounded-full text-[9px] font-bold text-primary uppercase tracking-widest">
-                                    Step {idx + 1}
-                                  </span>
-                                  <span
-                                    className={`font-bold text-[10px] tracking-wider uppercase flex items-center gap-1 ${isCompleted ? "text-emerald-600" : isUnlocked ? "text-emerald-700" : "text-on-surface-variant/40"}`}
-                                  >
-                                    {isCompleted ? (lang === "es" ? "Completado" : "Completed") : isUnlocked ? activeTranslations.unlocked : activeTranslations.locked}
-                                  </span>
-                                </div>
-                                <h3 className={`font-headline-md text-2xl font-bold mb-2 ${isCompleted ? "text-emerald-950" : isUnlocked ? "text-primary" : "text-on-surface-variant/60"}`}>
-                                  {item.name}
-                                </h3>
-                                <p className={`text-xs leading-relaxed mb-6 ${isCompleted ? "text-emerald-900/80" : isUnlocked ? "text-on-surface-variant" : "text-on-surface-variant/60"}`}>
-                                  {matchedResult?.reasoning_summary || "Program rules and dependency checklist."}
-                                </p>
-                                <div className="flex flex-wrap gap-3">
-                                  {isUnlocked ? (
-                                    <>
-                                      <button
-                                        onClick={() => {
-                                          setCompletedRoadmapSteps((prev) => ({
-                                            ...prev,
-                                            [item.name]: !prev[item.name],
-                                          }));
-                                        }}
-                                        className={`${isCompleted ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-primary text-on-primary hover:scale-[1.02]"} px-5 py-2 rounded-full font-bold text-xs scale-100 active:scale-95 duration-200 cursor-pointer flex items-center gap-1`}
-                                      >
-                                        {isCompleted && (
-                                          <span className="material-symbols-outlined text-xs">check</span>
-                                        )}
-                                        {isCompleted ? (lang === "es" ? "Completado" : "Completed") : activeTranslations.markDone}
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          const bid = matchedResult?.program_id;
-                                          if (bid) {
-                                            setActiveTab("documents");
-                                            setExpandedDocumentChecklist(bid);
-                                          }
-                                        }}
-                                        className="border border-primary text-primary px-5 py-2 rounded-full font-bold text-xs hover:bg-surface-container transition-colors cursor-pointer"
-                                      >
-                                        View checklists
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <button className="bg-secondary/15 text-on-surface-variant/50 px-5 py-2 rounded-full font-bold text-xs cursor-not-allowed" disabled>
-                                      Lock details
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
+                      {completedValue > 0 && (
+                        <div className="bg-emerald-50 border border-emerald-200/50 rounded-xl px-4 py-2 text-right">
+                          <div className="text-[10px] font-bold text-emerald-800 uppercase tracking-wide">
+                            {lang === "es" ? "Valor Anual Asegurado" : "Annual Value Secured"}
+                          </div>
+                          <div className="text-lg font-bold text-emerald-950">
+                            ${completedValue.toLocaleString()}
                           </div>
                         </div>
+                      )}
+                    </div>
+                    
+                    <div className="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+                      <div className="bg-emerald-500 h-full transition-all duration-500" style={{ width: `${roadmapProgressPercentage}%` }}></div>
+                    </div>
 
-                        {idx < orderedRoadmap.length - 1 && (
-                          <div className={`w-0.5 h-16 relative pointer-events-none ${isCompleted ? "bg-emerald-500" : isUnlocked ? "bg-primary" : "bg-outline-variant/35"}`}>
-                            <div className="absolute top-1/2 left-4 whitespace-nowrap text-on-surface-variant/30 font-bold text-[10px] flex items-center gap-1 select-none">
-                              <span className="material-symbols-outlined text-sm">arrow_downward</span>
-                              <span>unlocks next step</span>
+                    {roadmapProgressPercentage === 100 && (
+                      <div className="bg-emerald-50/70 border border-emerald-200/50 rounded-xl p-4 flex items-start gap-3 mt-2 animate-in zoom-in-95 duration-300">
+                        <span className="material-symbols-outlined text-emerald-600 text-lg shrink-0 mt-0.5 animate-bounce">celebration</span>
+                        <div>
+                          <div className="text-xs font-bold text-emerald-950">
+                            {lang === "es" ? "🎉 ¡Felicidades! Ruta Completada" : "🎉 Congratulations! Roadmap Completed"}
+                          </div>
+                          <p className="text-[11px] text-emerald-800/90 leading-relaxed mt-1">
+                            {lang === "es"
+                              ? `Ha completado todos los pasos secuenciales de su ruta y optimizado sus solicitudes de beneficios. ¡Ha asegurado un total estimado de $${completedValue.toLocaleString()} al año!`
+                              : `You have completed all sequential steps in your roadmap and successfully optimized your benefits. You've secured an estimated total of $${completedValue.toLocaleString()}/year!`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Multi-Hop Visualizer */}
+                  <div className="glass-card p-6 rounded-2xl space-y-6 shadow-sm border-primary/5">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <span className="material-symbols-outlined text-[18px]">account_tree</span>
+                      </span>
+                      <div>
+                        <h3 className="font-bold text-sm text-primary uppercase tracking-wider">
+                          {lang === "es" ? "Visualizador de Desbloqueo Multi-Salto (IA)" : "AI Multi-Hop Unlock Chain Visualizer"}
+                        </h3>
+                        <p className="text-[10px] text-on-surface-variant">
+                          {lang === "es" ? "Cómo los programas aprobados eliminan barreras para aprobaciones subsiguientes." : "How sequential approvals categorically bypass subsequent verification backlogs."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-2">
+                      <div className="flex-1 bg-white p-4 rounded-xl border border-outline-variant/35 shadow-sm text-center w-full relative group hover:border-primary/50 transition-colors">
+                        <span className="bg-primary/5 text-primary text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-widest block w-max mx-auto mb-2">Stage 1</span>
+                        <h4 className="font-bold text-xs text-primary mb-1">SNAP / Medicaid</h4>
+                        <p className="text-[10px] text-on-surface-variant leading-relaxed">
+                          {lang === "es" ? "Aprobación de Ingresos Básicos" : "Base Gross Income Audit Approved"}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-center shrink-0 w-8 md:w-12 h-8 md:h-auto select-none pointer-events-none">
+                        <svg className="w-6 h-6 text-primary animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" className="hidden md:block" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" className="block md:hidden" />
+                        </svg>
+                      </div>
+
+                      <div className="flex-1 bg-white p-4 rounded-xl border border-outline-variant/35 shadow-sm text-center w-full relative group hover:border-primary/50 transition-colors">
+                        <span className="bg-emerald-500/10 text-emerald-700 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-widest block w-max mx-auto mb-2">Unlocked Stage 2</span>
+                        <h4 className="font-bold text-xs text-emerald-950 mb-1">Lifeline Broadband</h4>
+                        <p className="text-[10px] text-emerald-900 leading-relaxed font-medium">
+                          {lang === "es" ? "Calificación Categórica Directa" : "Direct Categorical Qualification"}
+                        </p>
+                        <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
+                          {lang === "es" ? "Aprobación Instantánea" : "Instant Approval"}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-center shrink-0 w-8 md:w-12 h-8 md:h-auto select-none pointer-events-none">
+                        <svg className="w-6 h-6 text-primary animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" className="hidden md:block" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" className="block md:hidden" />
+                        </svg>
+                      </div>
+
+                      <div className="flex-grow flex-1 bg-white p-4 rounded-xl border border-outline-variant/35 shadow-sm text-center w-full relative group hover:border-primary/50 transition-colors animate-in zoom-in-95 duration-500">
+                        <span className="bg-emerald-500/10 text-emerald-700 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-widest block w-max mx-auto mb-2">Unlocked Stage 3</span>
+                        <h4 className="font-bold text-xs text-emerald-950 mb-1">WIC Support</h4>
+                        <p className="text-[10px] text-emerald-900 leading-relaxed font-medium">
+                          {lang === "es" ? "Revisión Urgente sin Carga" : "Expedited Backlog Bypass"}
+                        </p>
+                        <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm animate-bounce">
+                          {lang === "es" ? "Ahorra 3 Semanas" : "Saves 3 Weeks"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Optimal Application Order Engine */}
+                  <div className="glass-card p-6 rounded-2xl border border-outline-variant/35 shadow-sm space-y-6">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <span className="material-symbols-outlined text-[18px]">route</span>
+                      </span>
+                      <div>
+                        <h3 className="font-bold text-sm text-primary uppercase tracking-wider">
+                          {lang === "es" ? "Secuenciación Óptima de Aplicaciones (IA)" : "AI Optimal Application Sequence"}
+                        </h3>
+                        <p className="text-[10px] text-on-surface-variant">
+                          {lang === "es" ? "Secuencia óptima calculada en base a tiempos de espera, plazos y desbloqueos mutuos." : "Chronological sequence calculated to maximize speed and automatic categorical overrides."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
+                      <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 space-y-2 relative">
+                        <div className="flex justify-between items-center">
+                          <span className="bg-primary text-on-primary text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Priority 1</span>
+                          <span className="text-[10px] text-error font-bold">45d Wait</span>
+                        </div>
+                        <h4 className="font-bold text-xs text-primary">Medicaid</h4>
+                        <p className="text-[10px] text-on-surface-variant leading-relaxed">
+                          {lang === "es" ? "Aplique primero. Tarda 45 días pero desbloquea Lifeline y WIC." : "Apply first. Longest backlog (45 days) but unlocks Lifeline and WIC verification exemptions."}
+                        </p>
+                      </div>
+
+                      <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="bg-primary text-on-primary text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Priority 2</span>
+                          <span className="text-[10px] text-on-surface-variant font-bold font-semibold">30d Wait</span>
+                        </div>
+                        <h4 className="font-bold text-xs text-primary">SNAP</h4>
+                        <p className="text-[10px] text-on-surface-variant leading-relaxed">
+                          {lang === "es" ? "Aplique segundo. Tarda 30 días. Su aprobación califica para Lifeline." : "Apply second. Standard backlog (30 days). SNAP approval establishes instant Lifeline eligibility."}
+                        </p>
+                      </div>
+
+                      <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="bg-primary text-on-primary text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Priority 3</span>
+                          <span className="text-[10px] text-on-surface-variant font-bold font-semibold">7d Wait</span>
+                        </div>
+                        <h4 className="font-bold text-xs text-primary">Pell Grant</h4>
+                        <p className="text-[10px] text-on-surface-variant leading-relaxed">
+                          {lang === "es" ? "Aplique tercero. Tarda 7 días. Su estado de beca califica para SNAP de estudiante." : "Apply third. Short backlog (7 days). Grant approval qualifies college student exception rules for SNAP."}
+                        </p>
+                      </div>
+
+                      <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="bg-emerald-500 text-white text-[8px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Priority 4</span>
+                          <span className="text-[10px] text-emerald-600 font-bold font-semibold">Instant</span>
+                        </div>
+                        <h4 className="font-bold text-xs text-emerald-950 font-bold">Lifeline</h4>
+                        <p className="text-[10px] text-on-surface-variant leading-relaxed">
+                          {lang === "es" ? "Aplique al final. Aprobación instantánea usando SNAP o Medicaid." : "Apply last. Instant activation using verification hash from SNAP or Medicaid approval."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Steps timeline */}
+                  <div className="relative flex flex-col items-center gap-0">
+                    {orderedRoadmap.map((item, idx) => {
+                      const matchedResult = eligibilityResults.find(r => r.program_name === item.name);
+                      const eligible = matchedResult ? matchedResult.eligible : false;
+                      const isCompleted = completedRoadmapSteps[item.name] === true;
+                      // A step is unlocked if it's the first step OR the previous step is completed (marked as done)
+                      const isUnlocked = idx === 0 || completedRoadmapSteps[orderedRoadmap[idx - 1].name] === true;
+
+                      return (
+                        <React.Fragment key={idx}>
+                          <div className="w-full relative z-10">
+                            <div
+                              className={`rounded-xl p-8 border border-outline-variant/35 shadow-sm transition-all duration-300 hover:translate-y-[-2px] border-l-4 ${isCompleted ? "bg-emerald-50/20 border-emerald-500/35 border-l-emerald-500" : isUnlocked ? "bg-white border-l-primary" : "bg-surface-container-low border-l-outline-variant opacity-85"}`}
+                            >
+                              <div className="flex flex-col md:flex-row gap-6">
+                                <div
+                                  className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 ${isCompleted ? "bg-emerald-500 text-white animate-in zoom-in-50 duration-200" : isUnlocked ? "bg-primary text-on-primary" : "bg-surface-container-highest text-on-surface-variant/40"}`}
+                                >
+                                  <span className="material-symbols-outlined text-xl font-bold">
+                                    {isCompleted ? "check_circle" : isUnlocked ? "check_circle" : "lock"}
+                                  </span>
+                                </div>
+                                <div className="flex-grow">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <span className="bg-surface-container-highest px-3 py-1 rounded-full text-[9px] font-bold text-primary uppercase tracking-widest">
+                                      Step {idx + 1}
+                                    </span>
+                                    <span
+                                      className={`font-bold text-[10px] tracking-wider uppercase flex items-center gap-1 ${isCompleted ? "text-emerald-600" : isUnlocked ? "text-emerald-700" : "text-on-surface-variant/40"}`}
+                                    >
+                                      {isCompleted ? (lang === "es" ? "Completado" : "Completed") : isUnlocked ? activeTranslations.unlocked : activeTranslations.locked}
+                                    </span>
+                                  </div>
+                                  <h3 className={`font-headline-md text-2xl font-bold mb-2 ${isCompleted ? "text-emerald-950" : isUnlocked ? "text-primary" : "text-on-surface-variant/60"}`}>
+                                    {item.name}
+                                  </h3>
+                                  <p className={`text-xs leading-relaxed mb-6 ${isCompleted ? "text-emerald-900/80" : isUnlocked ? "text-on-surface-variant" : "text-on-surface-variant/60"}`}>
+                                    {matchedResult?.reasoning_summary || "Program rules and dependency checklist."}
+                                  </p>
+                                  <div className="flex flex-wrap gap-3">
+                                    {isUnlocked ? (
+                                      <>
+                                        <button
+                                          onClick={() => {
+                                            setCompletedRoadmapSteps((prev) => ({
+                                              ...prev,
+                                              [item.name]: !prev[item.name],
+                                            }));
+                                          }}
+                                          className={`${isCompleted ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-primary text-on-primary hover:scale-[1.02]"} px-5 py-2 rounded-full font-bold text-xs scale-100 active:scale-95 duration-200 cursor-pointer flex items-center gap-1`}
+                                        >
+                                          {isCompleted && (
+                                            <span className="material-symbols-outlined text-xs">check</span>
+                                          )}
+                                          {isCompleted ? (lang === "es" ? "Completado" : "Completed") : activeTranslations.markDone}
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            const bid = matchedResult?.program_id;
+                                            if (bid) {
+                                              setActiveTab("documents");
+                                              setExpandedDocumentChecklist(bid);
+                                            }
+                                          }}
+                                          className="border border-primary text-primary px-5 py-2 rounded-full font-bold text-xs hover:bg-surface-container transition-colors cursor-pointer"
+                                        >
+                                          View checklists
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <button className="bg-secondary/15 text-on-surface-variant/50 px-5 py-2 rounded-full font-bold text-xs cursor-not-allowed" disabled>
+                                        Lock details
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
+
+                          {idx < orderedRoadmap.length - 1 && (
+                            <div className={`w-0.5 h-16 relative pointer-events-none ${isCompleted ? "bg-emerald-500" : isUnlocked ? "bg-primary" : "bg-outline-variant/35"}`}>
+                              <div className="absolute top-1/2 left-4 whitespace-nowrap text-on-surface-variant/30 font-bold text-[10px] flex items-center gap-1 select-none">
+                                <span className="material-symbols-outlined text-sm">arrow_downward</span>
+                                <span>unlocks next step</span>
+                              </div>
+                            </div>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* TAB 5: WHAT CHANGED */}
             {activeTab === "updates" && (
