@@ -28,6 +28,59 @@ const programCardStyles: Record<string, { bg: string; border: string; text: stri
   "ssi_ssdi": { bg: "bg-indigo-50/70", border: "border-indigo-200/60", text: "text-indigo-950", textMuted: "text-indigo-800/80" },
 };
 
+const US_STATES = [
+  { code: "AL", name: "Alabama" },
+  { code: "AK", name: "Alaska" },
+  { code: "AZ", name: "Arizona" },
+  { code: "AR", name: "Arkansas" },
+  { code: "CA", name: "California" },
+  { code: "CO", name: "Colorado" },
+  { code: "CT", name: "Connecticut" },
+  { code: "DE", name: "Delaware" },
+  { code: "FL", name: "Florida" },
+  { code: "GA", name: "Georgia" },
+  { code: "HI", name: "Hawaii" },
+  { code: "ID", name: "Idaho" },
+  { code: "IL", name: "Illinois" },
+  { code: "IN", name: "Indiana" },
+  { code: "IA", name: "Iowa" },
+  { code: "KS", name: "Kansas" },
+  { code: "KY", name: "Kentucky" },
+  { code: "LA", name: "Louisiana" },
+  { code: "ME", name: "Maine" },
+  { code: "MD", name: "Maryland" },
+  { code: "MA", name: "Massachusetts" },
+  { code: "MI", name: "Michigan" },
+  { code: "MN", name: "Minnesota" },
+  { code: "MS", name: "Mississippi" },
+  { code: "MO", name: "Missouri" },
+  { code: "MT", name: "Montana" },
+  { code: "NE", name: "Nebraska" },
+  { code: "NV", name: "Nevada" },
+  { code: "NH", name: "New Hampshire" },
+  { code: "NJ", name: "New Jersey" },
+  { code: "NM", name: "New Mexico" },
+  { code: "NY", name: "New York" },
+  { code: "NC", name: "North Carolina" },
+  { code: "ND", name: "North Dakota" },
+  { code: "OH", name: "Ohio" },
+  { code: "OK", name: "Oklahoma" },
+  { code: "OR", name: "Oregon" },
+  { code: "PA", name: "Pennsylvania" },
+  { code: "RI", name: "Rhode Island" },
+  { code: "SC", name: "South Carolina" },
+  { code: "SD", name: "South Dakota" },
+  { code: "TN", name: "Tennessee" },
+  { code: "TX", name: "Texas" },
+  { code: "UT", name: "Utah" },
+  { code: "VT", name: "Vermont" },
+  { code: "VA", name: "Virginia" },
+  { code: "WA", name: "Washington" },
+  { code: "WV", name: "West Virginia" },
+  { code: "WI", name: "Wisconsin" },
+  { code: "WY", name: "Wyoming" }
+];
+
 const programSimpleExplanations: Record<string, { en: string; es: string }> = {
   "snap": {
     en: "You qualify for SNAP because your household size and income are below your state's threshold, giving you monthly funds loaded onto an EBT card for groceries.",
@@ -82,13 +135,25 @@ function parseFreeFormProfile(text: string): Record<string, string> {
   };
 
   const states: Record<string, string[]> = {
-    ca: ["california", "ca"], tx: ["texas", "tx"], fl: ["florida", "fl"],
-    ny: ["new york", "ny"], il: ["illinois", "il"], pa: ["pennsylvania", "pa"],
-    oh: ["ohio", "oh"], ga: ["georgia", "ga"], nc: ["north carolina", "nc"],
-    mi: ["michigan", "mi"], wa: ["washington", "wa"], az: ["arizona", "az"],
+    al: ["alabama", "al"], ak: ["alaska", "ak"], az: ["arizona", "az"], ar: ["arkansas", "ar"],
+    ca: ["california", "ca"], co: ["colorado", "co"], ct: ["connecticut", "ct"], de: ["delaware", "de"],
+    fl: ["florida", "fl"], ga: ["georgia", "ga"], hi: ["hawaii", "hi"], id: ["idaho", "id"],
+    il: ["illinois", "il"], in: ["indiana", "in"], ia: ["iowa", "ia"], ks: ["kansas", "ks"],
+    ky: ["kentucky", "ky"], la: ["louisiana", "la"], me: ["maine", "me"], md: ["maryland", "md"],
+    ma: ["massachusetts", "ma"], mi: ["michigan", "mi"], mn: ["minnesota", "mn"], ms: ["mississippi", "ms"],
+    mo: ["missouri", "mo"], mt: ["montana", "mt"], ne: ["nebraska", "ne"], nv: ["nevada", "nv"],
+    nh: ["new hampshire", "nh"], nj: ["new jersey", "nj"], nm: ["new mexico", "nm"], ny: ["new york", "ny"],
+    nc: ["north carolina", "nc"], nd: ["north dakota", "nd"], oh: ["ohio", "oh"], ok: ["oklahoma", "ok"],
+    or: ["oregon", "or"], pa: ["pennsylvania", "pa"], ri: ["rhode island", "ri"], sc: ["south carolina", "sc"],
+    sd: ["south dakota", "sd"], tn: ["tennessee", "tn"], tx: ["texas", "tx"], ut: ["utah", "ut"],
+    vt: ["vermont", "vt"], va: ["virginia", "va"], wa: ["washington", "wa"], wv: ["west virginia", "wv"],
+    wi: ["wisconsin", "wi"], wy: ["wyoming", "wy"]
   };
   for (const [code, names] of Object.entries(states)) {
-    if (names.some(name => lowercase.includes(name))) {
+    if (names.some(name => {
+      const regex = new RegExp(`\\b${name}\\b`, "i");
+      return regex.test(lowercase);
+    })) {
       facts.state = code.toUpperCase();
       break;
     }
@@ -489,6 +554,9 @@ export default function Home() {
   const [pdfZoom, setPdfZoom] = useState<"normal" | "in" | "full">("normal");
   const [showUpdateProfileModal, setShowUpdateProfileModal] = useState(false);
   const [editProfileFacts, setEditProfileFacts] = useState<Record<string, string>>({});
+  const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
+  const [stateSearchQuery, setStateSearchQuery] = useState("");
+  const stateDropdownRef = useRef<HTMLDivElement>(null);
   const [simulationIncome, setSimulationIncome] = useState<number>(0);
   const [simulationHouseholdSize, setSimulationHouseholdSize] = useState<number>(1);
   const [isSimulationActive, setIsSimulationActive] = useState<boolean>(false);
@@ -499,6 +567,18 @@ export default function Home() {
   const [qrError, setQrError] = useState(false);
   const [contradictionAlerts, setContradictionAlerts] = useState<string[]>([]);
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (stateDropdownRef.current && !stateDropdownRef.current.contains(event.target as Node)) {
+        setStateDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     setReportDate(new Date().toLocaleDateString());
@@ -5683,22 +5763,72 @@ export default function Home() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">
                     {lang === "es" ? "Estado" : "State"}
                   </label>
-                  <select
-                    value={editProfileFacts.state || ""}
-                    onChange={(e) => setEditProfileFacts(prev => ({ ...prev, state: e.target.value }))}
-                    className="w-full bg-surface-container-lowest border border-outline-variant/35 rounded-lg px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:border-primary transition-colors"
-                  >
-                    <option value="CA">California (CA)</option>
-                    <option value="TX">Texas (TX)</option>
-                    <option value="FL">Florida (FL)</option>
-                    <option value="NY">New York (NY)</option>
-                    <option value="IL">Illinois (IL)</option>
-                    <option value="PA">Pennsylvania (PA)</option>
-                    <option value="OH">Ohio (OH)</option>
-                    <option value="GA">Georgia (GA)</option>
-                    <option value="NC">North Carolina (NC)</option>
-                    <option value="MI">Michigan (MI)</option>
-                  </select>
+                  <div className="relative" ref={stateDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStateDropdownOpen(!stateDropdownOpen);
+                        setStateSearchQuery("");
+                      }}
+                      className="w-full bg-surface-container-lowest border border-outline-variant/35 rounded-lg px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:border-primary transition-colors text-left flex items-center justify-between cursor-pointer"
+                    >
+                      <span>
+                        {US_STATES.find(s => s.code === editProfileFacts.state)?.name || editProfileFacts.state || "Select State"} ({editProfileFacts.state || "N/A"})
+                      </span>
+                      <span className="material-symbols-outlined text-sm">arrow_drop_down</span>
+                    </button>
+
+                    {stateDropdownOpen && (
+                      <div className="absolute z-50 mt-1 w-full bg-surface-container-lowest border border-outline-variant/35 rounded-lg shadow-lg max-h-60 overflow-hidden flex flex-col">
+                        <div className="p-2 border-b border-outline-variant/15">
+                          <input
+                            type="text"
+                            placeholder={lang === "es" ? "Buscar estado..." : "Search state..."}
+                            value={stateSearchQuery}
+                            onChange={(e) => setStateSearchQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                              }
+                            }}
+                            className="w-full bg-surface-container border border-outline-variant/35 rounded px-3 py-1.5 text-xs text-on-surface focus:outline-none focus:border-primary"
+                            autoFocus
+                          />
+                        </div>
+                        <div className="overflow-y-auto flex-1 max-h-48 py-1">
+                          {US_STATES.filter(s =>
+                            s.name.toLowerCase().includes(stateSearchQuery.toLowerCase()) ||
+                            s.code.toLowerCase().includes(stateSearchQuery.toLowerCase())
+                          ).map((s) => (
+                            <button
+                              key={s.code}
+                              type="button"
+                              onClick={() => {
+                                setEditProfileFacts(prev => ({ ...prev, state: s.code }));
+                                setStateDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 text-xs hover:bg-primary/10 hover:text-primary transition-colors flex items-center justify-between cursor-pointer ${
+                                editProfileFacts.state === s.code ? "bg-primary/5 text-primary font-semibold" : "text-on-surface"
+                              }`}
+                            >
+                              <span>{s.name} ({s.code})</span>
+                              {editProfileFacts.state === s.code && (
+                                <span className="material-symbols-outlined text-xs">check</span>
+                              )}
+                            </button>
+                          ))}
+                          {US_STATES.filter(s =>
+                            s.name.toLowerCase().includes(stateSearchQuery.toLowerCase()) ||
+                            s.code.toLowerCase().includes(stateSearchQuery.toLowerCase())
+                          ).length === 0 && (
+                            <div className="px-4 py-3 text-xs text-on-surface-variant text-center">
+                              {lang === "es" ? "No se encontraron estados" : "No states found"}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>
