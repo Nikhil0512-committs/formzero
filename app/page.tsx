@@ -826,6 +826,9 @@ export default function Home() {
         const savedQuestionIdx = localStorage.getItem(`claimradar_question_index_${user.email}`);
         if (savedQuestionIdx) setCurrentQuestionIndex(parseInt(savedQuestionIdx) || 1);
 
+        const savedRoadmap = localStorage.getItem(`claimradar_completed_roadmap_steps_${user.email}`);
+        if (savedRoadmap) setCompletedRoadmapSteps(JSON.parse(savedRoadmap));
+
         // Then, fetch latest data from backend to re-hydrate (handles new browser / cleared cache)
         fetch(`/api/v1/auth/me?email=${encodeURIComponent(user.email)}`)
           .then((res) => {
@@ -904,6 +907,9 @@ export default function Home() {
 
         const savedQuestionIdx = localStorage.getItem("claimradar_question_index_guest");
         if (savedQuestionIdx) setCurrentQuestionIndex(parseInt(savedQuestionIdx) || 1);
+
+        const savedRoadmap = localStorage.getItem("claimradar_completed_roadmap_steps_guest");
+        if (savedRoadmap) setCompletedRoadmapSteps(JSON.parse(savedRoadmap));
       } catch (e) {
         console.error("Failed to restore guest session", e);
       }
@@ -968,6 +974,18 @@ export default function Home() {
     const key = currentUser ? `claimradar_question_index_${currentUser.email}` : "claimradar_question_index_guest";
     localStorage.setItem(key, currentQuestionIndex.toString());
   }, [currentQuestionIndex, currentUser, isInitialLoadComplete]);
+
+  // 5. Auto-save completedRoadmapSteps
+  useEffect(() => {
+    if (!isInitialLoadComplete) return;
+    const key = currentUser ? `claimradar_completed_roadmap_steps_${currentUser.email}` : "claimradar_completed_roadmap_steps_guest";
+    if (Object.keys(completedRoadmapSteps).length > 0) {
+      localStorage.setItem(key, JSON.stringify(completedRoadmapSteps));
+    } else {
+      localStorage.removeItem(key);
+    }
+  }, [completedRoadmapSteps, currentUser, isInitialLoadComplete]);
+
 
   // When opening the update profile modal, populate it with current facts
   useEffect(() => {
@@ -1086,6 +1104,8 @@ export default function Home() {
 
       const guestActiveView = localStorage.getItem("claimradar_active_view_guest") as ViewState | null;
       const guestQuestionIdx = localStorage.getItem("claimradar_question_index_guest");
+      const guestRoadmapStr = localStorage.getItem("claimradar_completed_roadmap_steps_guest");
+      const guestRoadmap = guestRoadmapStr ? JSON.parse(guestRoadmapStr) : {};
 
       let finalFacts = data.profile_facts || {};
       let finalChat = data.chat_messages || [];
@@ -1100,6 +1120,11 @@ export default function Home() {
         finalChat = [...finalChat, ...guestChat];
       }
 
+      // Combine user and guest completed roadmap steps
+      const savedUserRoadmapStr = localStorage.getItem(`claimradar_completed_roadmap_steps_${data.user.email}`);
+      const savedUserRoadmap = savedUserRoadmapStr ? JSON.parse(savedUserRoadmapStr) : {};
+      const finalRoadmap = { ...savedUserRoadmap, ...guestRoadmap };
+
       // 1. Update all localStorage values synchronously
       localStorage.setItem("claimradar_user", JSON.stringify(userSession));
       localStorage.setItem(`claimradar_profile_facts_${data.user.email}`, JSON.stringify(finalFacts));
@@ -1111,11 +1136,16 @@ export default function Home() {
       let finalQuestionIdx = guestQuestionIdx || "1";
       localStorage.setItem(`claimradar_question_index_${data.user.email}`, finalQuestionIdx);
 
+      if (Object.keys(finalRoadmap).length > 0) {
+        localStorage.setItem(`claimradar_completed_roadmap_steps_${data.user.email}`, JSON.stringify(finalRoadmap));
+      }
+
       // Clean up guest local storage keys
       localStorage.removeItem("claimradar_anonymous_profile_facts");
       localStorage.removeItem("claimradar_chat_guest");
       localStorage.removeItem("claimradar_active_view_guest");
       localStorage.removeItem("claimradar_question_index_guest");
+      localStorage.removeItem("claimradar_completed_roadmap_steps_guest");
 
       // 2. Batch React state updates synchronously
       setCurrentUser(userSession);
@@ -1123,6 +1153,7 @@ export default function Home() {
       setChatMessages(finalChat);
       setActiveView(finalView);
       setCurrentQuestionIndex(parseInt(finalQuestionIdx) || 1);
+      setCompletedRoadmapSteps(finalRoadmap);
 
       // 3. Unconditionally calculate/reset eligibility results
       if (Object.keys(finalFacts).length > 0) {
@@ -1219,6 +1250,7 @@ export default function Home() {
       localStorage.removeItem(`claimradar_profile_facts_${currentUser.email}`);
       localStorage.removeItem(`claimradar_active_view_${currentUser.email}`);
       localStorage.removeItem(`claimradar_question_index_${currentUser.email}`);
+      localStorage.removeItem(`claimradar_completed_roadmap_steps_${currentUser.email}`);
     }
     setCurrentUser(null);
     localStorage.removeItem("claimradar_user");
@@ -1244,6 +1276,7 @@ export default function Home() {
       localStorage.removeItem(`claimradar_profile_facts_${currentUser.email}`);
       localStorage.removeItem(`claimradar_active_view_${currentUser.email}`);
       localStorage.removeItem(`claimradar_question_index_${currentUser.email}`);
+      localStorage.removeItem(`claimradar_completed_roadmap_steps_${currentUser.email}`);
       localStorage.removeItem("claimradar_user");
       setCurrentUser(null);
       setShowDeleteAccountModal(false);
@@ -2672,12 +2705,14 @@ export default function Home() {
     setCitations({});
     setClockData(null);
     setCurrentQuestionIndex(1);
+    setCompletedRoadmapSteps({});
 
     if (currentUser && sync) {
       localStorage.removeItem(`claimradar_chat_${currentUser.email}`);
       localStorage.removeItem(`claimradar_profile_facts_${currentUser.email}`);
       localStorage.removeItem(`claimradar_active_view_${currentUser.email}`);
       localStorage.removeItem(`claimradar_question_index_${currentUser.email}`);
+      localStorage.removeItem(`claimradar_completed_roadmap_steps_${currentUser.email}`);
       
       fetch("/api/v1/auth/save-profile", {
         method: "POST",
@@ -2693,6 +2728,7 @@ export default function Home() {
       localStorage.removeItem("claimradar_anonymous_profile_facts");
       localStorage.removeItem("claimradar_active_view_guest");
       localStorage.removeItem("claimradar_question_index_guest");
+      localStorage.removeItem("claimradar_completed_roadmap_steps_guest");
     }
   }
 
