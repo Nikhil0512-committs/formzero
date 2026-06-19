@@ -4509,22 +4509,24 @@ export default function Home() {
               const seenDocs = new Set<string>();
 
               eligibilityResults.forEach((b) => {
-                const checklist = getDocumentChecklist(b.program_name);
-                if (checklist) {
-                  uncondensedCount += checklist.documents.length;
-                  checklist.documents.forEach((doc) => {
-                    if (!seenDocs.has(doc.name)) {
-                      seenDocs.add(doc.name);
-                      totalDocs++;
-                      if (completedDocs.has(doc.name) || doc.status === "likely_have") {
-                        likelyHaveDocs++;
-                      } else if (doc.status === "need_to_gather") {
-                        needToGatherDocs++;
-                      } else {
-                        mayNotHaveDocs++;
+                if (b.eligible) {
+                  const checklist = getDocumentChecklist(b.program_name);
+                  if (checklist) {
+                    uncondensedCount += checklist.documents.length;
+                    checklist.documents.forEach((doc) => {
+                      if (!seenDocs.has(doc.name)) {
+                        seenDocs.add(doc.name);
+                        totalDocs++;
+                        if (completedDocs.has(doc.name) || doc.status === "likely_have") {
+                          likelyHaveDocs++;
+                        } else if (doc.status === "need_to_gather") {
+                          needToGatherDocs++;
+                        } else {
+                          mayNotHaveDocs++;
+                        }
                       }
-                    }
-                  });
+                    });
+                  }
                 }
               });
 
